@@ -1,0 +1,202 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerController : MonoBehaviour
+{
+    public float moveSpeed = 1f;
+    public float collisionOffset = 0.05f;
+    public ContactFilter2D movementFilter;
+    public SwordAttack swordAttack;
+    
+    bool isEnergyZero ;
+    
+    
+    Vector2 movementInput;
+
+    SpriteRenderer spriteRenderer;
+
+    Rigidbody2D rb;
+    
+    Animator animator;
+
+    List<RaycastHit2D> castCollisions = new List<RaycastHit2D>();
+    
+    bool CanMove = true;
+
+    public Boolean isFacingLeft = false;
+    public Boolean isFacingRight = false;
+
+    
+    // Start is called before the first frame update
+    
+    public bool GetPlayerFlipX()
+    {
+        return spriteRenderer.flipX;
+    }
+    
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+    
+    private void FixedUpdate()
+    {
+        if (movementInput.x > 0)
+        {
+            isFacingLeft = false;
+            isFacingRight = true;
+        }
+        else if (movementInput.x < 0)
+        {
+            isFacingLeft = true;
+            isFacingRight = false;
+        }
+        
+        if (CanMove)
+        {
+            if (movementInput != Vector2.zero)
+            {
+                bool success = TryMove(movementInput);
+
+                if (!success && movementInput.x != 0)
+                {
+                    success = TryMove(new Vector2(movementInput.x, 0));
+                }
+
+                if (!success && movementInput.y != 0)
+                {
+                    success = TryMove(new Vector2(0, movementInput.y));
+                }
+        
+                animator.SetBool("isMoving", success);
+            }
+        }
+        else
+        {
+            animator.SetBool("isMoving", false);
+        }
+
+        if (movementInput.y > 0)
+        {
+            animator.SetBool("MoveUp", true);
+            animator.SetBool("MoveDown", false);
+            animator.SetBool("IdleUp", false);
+            animator.SetBool("IdleDown", false);
+        }
+        else if (movementInput.y < 0)
+        {
+            animator.SetBool("MoveUp", false);
+            animator.SetBool("MoveDown", true);
+            animator.SetBool("IdleUp", false);
+            animator.SetBool("IdleDown", false);
+        }
+        else
+        {
+            animator.SetBool("MoveUp", false);
+            animator.SetBool("MoveDown", false);
+        
+            if (movementInput.x == 0)
+            {
+                animator.SetBool("IdleUp", true);
+                animator.SetBool("IdleDown", true);
+            }
+        }
+
+        if (movementInput.x != 0)
+        {
+            animator.SetBool("IdleUp", false);
+            animator.SetBool("IdleDown", false);
+        }
+        if (movementInput.x < 0)
+        {
+            spriteRenderer.flipX = true;
+        } 
+        else if (movementInput.x > 0)
+        {
+            spriteRenderer.flipX = false;
+        }
+    }
+
+
+    private bool TryMove(Vector2 direction)
+    {
+        int count = rb.Cast(
+            direction,
+            movementFilter,
+            castCollisions,
+            moveSpeed * Time.fixedDeltaTime + collisionOffset);
+        if (count == 0)
+        {
+            rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
+            return true;
+        }
+        else
+        {
+            if (direction.y > 0)
+            {
+                animator.SetBool("IdleUp", true);
+                animator.SetBool("IdleDown", false);
+            }
+            else if (direction.y < 0)
+            {
+                animator.SetBool("IdleUp", false);
+                animator.SetBool("IdleDown", true);
+            }
+            return false;
+        }
+    }
+
+    void OnMove(InputValue movementValue)
+    {
+        movementInput = movementValue.Get<Vector2>();
+        animator.SetBool("isMoving", movementInput != Vector2.zero);
+    }
+    
+        void OnFire()
+    {
+        StartCoroutine(AttackRoutine());
+    }
+
+    
+    IEnumerator AttackRoutine()
+    {
+        isEnergyZero = GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().isEnergyZero;
+        LockMovement();
+        if (isEnergyZero)
+        {
+            UnlockMovement(); // 解锁移动，以便在能量恢复后再次进行攻击
+            yield break; // 如果isEnergyZero为true，直接退出函数，不执行攻击动画
+        }
+        if (spriteRenderer.flipX == true)
+        {
+            swordAttack.AttackLeft();
+        }
+        else
+        {
+            swordAttack.AttackRight();
+        }
+        // Wait for the duration of the attack before stopping the attack.
+        // You might need to adjust this duration to match your animation.
+        yield return new WaitForSeconds(0.1f);
+        animator.SetTrigger("SwordAttack");
+        swordAttack.StopAttack();
+        UnlockMovement();
+        GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().swordAttackUsing();
+    }
+    
+    
+    public void LockMovement()
+    {
+        CanMove = false;
+    }
+
+    public void UnlockMovement()
+    {
+        CanMove = true;
+    }
+}
