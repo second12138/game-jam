@@ -678,7 +678,13 @@ PlayerSettings:
   XboxOneOverrideIdentityName: 
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
-  cloudServicesEnabled: {}
+  cloudServicesEnabled:
+    Build: 0
+    Game Performance: 0
+    Legacy Analytics: 0
+    Purchasing: 0
+    UDP: 0
+    Unity Ads: 0
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -698,11 +704,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: d4d9861d-6fd7-4be6-8cb9-385b6a3f3c28
+  cloudProjectId: cd457d55-7e41-40d6-8df7-f498d48c50bd
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: Game Jam
-  organizationId: re_link
+  organizationId: game-jam-1111
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

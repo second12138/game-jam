@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 1f;
+    public float moveSpeed = 100f;
     public float collisionOffset = 0.05f;
     public ContactFilter2D movementFilter;
     public SwordAttack swordAttack;
@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
     public Boolean isFacingLeft = false;
     public Boolean isFacingRight = false;
 
+    private float moveX, moveY;
+
+    private Vector2 moveDirection;
     
     // Start is called before the first frame update
     
@@ -46,6 +49,8 @@ public class PlayerController : MonoBehaviour
     
     private void FixedUpdate()
     {
+        inputSection();
+        PlayerMove();
         if (movementInput.x > 0)
         {
             isFacingLeft = false;
@@ -123,6 +128,17 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    private void inputSection()
+    {
+        moveX = Input.GetAxisRaw("Horizontal");
+        moveY = Input.GetAxisRaw("Vertical");
+        moveDirection = new Vector2(moveX, moveY).normalized;
+    }
+
+    private void PlayerMove()
+    {
+        rb.velocity = new Vector2(moveDirection.x * moveSpeed, moveDirection.y * moveSpeed);
+    }
     private bool TryMove(Vector2 direction)
     {
         int count = rb.Cast(
@@ -151,13 +167,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnMove(InputValue movementValue)
-    {
-        movementInput = movementValue.Get<Vector2>();
-        animator.SetBool("isMoving", movementInput != Vector2.zero);
-    }
-    
-        void OnFire()
+    void OnFire()
     {
         StartCoroutine(AttackRoutine());
     }

@@ -1,0 +1,4 @@
+repository "game-jam@re_link@cloud"
+  path "/"
+    br "/main"
+    co "/main"
