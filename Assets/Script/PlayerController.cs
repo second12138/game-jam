@@ -9,7 +9,6 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 100f;
     public float collisionOffset = 0.05f;
     public ContactFilter2D movementFilter;
-    public SwordAttack swordAttack;
     
     bool isEnergyZero ;
     
@@ -166,39 +165,6 @@ public class PlayerController : MonoBehaviour
             return false;
         }
     }
-
-    void OnFire()
-    {
-        StartCoroutine(AttackRoutine());
-    }
-
-    
-    IEnumerator AttackRoutine()
-    {
-        isEnergyZero = GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().isEnergyZero;
-        LockMovement();
-        if (isEnergyZero)
-        {
-            UnlockMovement(); // 解锁移动，以便在能量恢复后再次进行攻击
-            yield break; // 如果isEnergyZero为true，直接退出函数，不执行攻击动画
-        }
-        if (spriteRenderer.flipX == true)
-        {
-            swordAttack.AttackLeft();
-        }
-        else
-        {
-            swordAttack.AttackRight();
-        }
-        // Wait for the duration of the attack before stopping the attack.
-        // You might need to adjust this duration to match your animation.
-        yield return new WaitForSeconds(0.1f);
-        animator.SetTrigger("SwordAttack");
-        swordAttack.StopAttack();
-        UnlockMovement();
-        GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().swordAttackUsing();
-    }
-    
     
     public void LockMovement()
     {
