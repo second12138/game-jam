@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -22,8 +21,6 @@ public class PlayerController : MonoBehaviour
     Animator animator;
 
     List<RaycastHit2D> castCollisions = new List<RaycastHit2D>();
-    
-    bool CanMove = true;
 
     public Boolean isFacingLeft = false;
     public Boolean isFacingRight = false;
@@ -104,13 +101,4 @@ public class PlayerController : MonoBehaviour
         }
     }
     
-    public void LockMovement()
-    {
-        CanMove = false;
-    }
-
-    public void UnlockMovement()
-    {
-        CanMove = true;
-    }
 }
