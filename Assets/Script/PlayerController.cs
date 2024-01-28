@@ -50,80 +50,7 @@ public class PlayerController : MonoBehaviour
     {
         inputSection();
         PlayerMove();
-        if (movementInput.x > 0)
-        {
-            isFacingLeft = false;
-            isFacingRight = true;
-        }
-        else if (movementInput.x < 0)
-        {
-            isFacingLeft = true;
-            isFacingRight = false;
-        }
-        
-        if (CanMove)
-        {
-            if (movementInput != Vector2.zero)
-            {
-                bool success = TryMove(movementInput);
-
-                if (!success && movementInput.x != 0)
-                {
-                    success = TryMove(new Vector2(movementInput.x, 0));
-                }
-
-                if (!success && movementInput.y != 0)
-                {
-                    success = TryMove(new Vector2(0, movementInput.y));
-                }
-        
-                animator.SetBool("isMoving", success);
-            }
-        }
-        else
-        {
-            animator.SetBool("isMoving", false);
-        }
-
-        if (movementInput.y > 0)
-        {
-            animator.SetBool("MoveUp", true);
-            animator.SetBool("MoveDown", false);
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        else if (movementInput.y < 0)
-        {
-            animator.SetBool("MoveUp", false);
-            animator.SetBool("MoveDown", true);
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        else
-        {
-            animator.SetBool("MoveUp", false);
-            animator.SetBool("MoveDown", false);
-        
-            if (movementInput.x == 0)
-            {
-                animator.SetBool("IdleUp", true);
-                animator.SetBool("IdleDown", true);
-            }
-        }
-
-        if (movementInput.x != 0)
-        {
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        if (movementInput.x < 0)
-        {
-            spriteRenderer.flipX = true;
-        } 
-        else if (movementInput.x > 0)
-        {
-            spriteRenderer.flipX = false;
-        }
+        PlayerAnim();
     }
 
 
@@ -137,6 +64,21 @@ public class PlayerController : MonoBehaviour
     private void PlayerMove()
     {
         rb.velocity = new Vector2(moveDirection.x * moveSpeed, moveDirection.y * moveSpeed);
+    }
+
+    private void PlayerAnim()
+    {
+        if (moveDirection != Vector2.zero)
+        {
+            animator.SetBool("Walking",true);
+        }
+        else
+        {
+            animator.SetBool("Walking",false);
+        }
+        
+        animator.SetFloat("moveX",moveX);
+        animator.SetFloat("moveY",moveY);
     }
     private bool TryMove(Vector2 direction)
     {
@@ -154,13 +96,9 @@ public class PlayerController : MonoBehaviour
         {
             if (direction.y > 0)
             {
-                animator.SetBool("IdleUp", true);
-                animator.SetBool("IdleDown", false);
             }
             else if (direction.y < 0)
             {
-                animator.SetBool("IdleUp", false);
-                animator.SetBool("IdleDown", true);
             }
             return false;
         }
