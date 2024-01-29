@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -9,7 +8,6 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 100f;
     public float collisionOffset = 0.05f;
     public ContactFilter2D movementFilter;
-    public SwordAttack swordAttack;
     
     bool isEnergyZero ;
     
@@ -23,8 +21,6 @@ public class PlayerController : MonoBehaviour
     Animator animator;
 
     List<RaycastHit2D> castCollisions = new List<RaycastHit2D>();
-    
-    bool CanMove = true;
 
     public Boolean isFacingLeft = false;
     public Boolean isFacingRight = false;
@@ -51,80 +47,7 @@ public class PlayerController : MonoBehaviour
     {
         inputSection();
         PlayerMove();
-        if (movementInput.x > 0)
-        {
-            isFacingLeft = false;
-            isFacingRight = true;
-        }
-        else if (movementInput.x < 0)
-        {
-            isFacingLeft = true;
-            isFacingRight = false;
-        }
-        
-        if (CanMove)
-        {
-            if (movementInput != Vector2.zero)
-            {
-                bool success = TryMove(movementInput);
-
-                if (!success && movementInput.x != 0)
-                {
-                    success = TryMove(new Vector2(movementInput.x, 0));
-                }
-
-                if (!success && movementInput.y != 0)
-                {
-                    success = TryMove(new Vector2(0, movementInput.y));
-                }
-        
-                animator.SetBool("isMoving", success);
-            }
-        }
-        else
-        {
-            animator.SetBool("isMoving", false);
-        }
-
-        if (movementInput.y > 0)
-        {
-            animator.SetBool("MoveUp", true);
-            animator.SetBool("MoveDown", false);
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        else if (movementInput.y < 0)
-        {
-            animator.SetBool("MoveUp", false);
-            animator.SetBool("MoveDown", true);
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        else
-        {
-            animator.SetBool("MoveUp", false);
-            animator.SetBool("MoveDown", false);
-        
-            if (movementInput.x == 0)
-            {
-                animator.SetBool("IdleUp", true);
-                animator.SetBool("IdleDown", true);
-            }
-        }
-
-        if (movementInput.x != 0)
-        {
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleDown", false);
-        }
-        if (movementInput.x < 0)
-        {
-            spriteRenderer.flipX = true;
-        } 
-        else if (movementInput.x > 0)
-        {
-            spriteRenderer.flipX = false;
-        }
+        PlayerAnim();
     }
 
 
@@ -138,6 +61,21 @@ public class PlayerController : MonoBehaviour
     private void PlayerMove()
     {
         rb.velocity = new Vector2(moveDirection.x * moveSpeed, moveDirection.y * moveSpeed);
+    }
+
+    private void PlayerAnim()
+    {
+        if (moveDirection != Vector2.zero)
+        {
+            animator.SetBool("Walking",true);
+        }
+        else
+        {
+            animator.SetBool("Walking",false);
+        }
+        
+        animator.SetFloat("moveX",moveX);
+        animator.SetFloat("moveY",moveY);
     }
     private bool TryMove(Vector2 direction)
     {
@@ -155,58 +93,12 @@ public class PlayerController : MonoBehaviour
         {
             if (direction.y > 0)
             {
-                animator.SetBool("IdleUp", true);
-                animator.SetBool("IdleDown", false);
             }
             else if (direction.y < 0)
             {
-                animator.SetBool("IdleUp", false);
-                animator.SetBool("IdleDown", true);
             }
             return false;
         }
     }
-
-    void OnFire()
-    {
-        StartCoroutine(AttackRoutine());
-    }
-
     
-    IEnumerator AttackRoutine()
-    {
-        isEnergyZero = GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().isEnergyZero;
-        LockMovement();
-        if (isEnergyZero)
-        {
-            UnlockMovement(); // 解锁移动，以便在能量恢复后再次进行攻击
-            yield break; // 如果isEnergyZero为true，直接退出函数，不执行攻击动画
-        }
-        if (spriteRenderer.flipX == true)
-        {
-            swordAttack.AttackLeft();
-        }
-        else
-        {
-            swordAttack.AttackRight();
-        }
-        // Wait for the duration of the attack before stopping the attack.
-        // You might need to adjust this duration to match your animation.
-        yield return new WaitForSeconds(0.1f);
-        animator.SetTrigger("SwordAttack");
-        swordAttack.StopAttack();
-        UnlockMovement();
-        GameObject.FindGameObjectWithTag("Player").GetComponent<Status>().swordAttackUsing();
-    }
-    
-    
-    public void LockMovement()
-    {
-        CanMove = false;
-    }
-
-    public void UnlockMovement()
-    {
-        CanMove = true;
-    }
 }
